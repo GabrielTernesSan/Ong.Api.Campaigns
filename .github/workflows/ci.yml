@@ -1,0 +1,84 @@
+name: CI - Ong.Api.Campaigns
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/ong-api-campaigns
+
+jobs:
+  build-and-test:
+    name: 🔨 Build & Testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: preview
+
+      - name: 📦 Restore
+        run: dotnet restore Ong.Api.Campaigns.sln
+
+      - name: 🏗️ Build
+        run: dotnet build Ong.Api.Campaigns.sln --configuration Release --no-restore
+
+      - name: 🧪 Testes
+        run: |
+          dotnet test tests/Ong.Tests/Ong.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./test-results
+
+      - name: 📊 Publicar Resultados
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Testes - Ong.Api.Campaigns
+          path: ./test-results/*.trx
+          reporter: dotnet-trx
+
+  docker:
+    name: 🐳 Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔐 Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Metadados
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - name: 🚀 Build & Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/Ong.Api.Campaigns/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
