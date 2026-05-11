@@ -73,7 +73,8 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("GestorONGPolicy", policy => policy.RequireRole("GestorONG"));
+    .AddPolicy("GestorONGPolicy", policy => policy.RequireRole("GestorONG"))
+    .AddPolicy("DoadorPolicy", policy => policy.RequireRole("Doador"));
 
 builder.Services.AddHealthChecks();
 
@@ -118,6 +119,13 @@ app.MapPost("/donations/{campaignId}", async (Guid campaignId, [FromBody] Donati
 
     var result = await mediator.Send(request);
     return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
-}).RequireAuthorization().WithTags("Donations");
+}).RequireAuthorization("DoadorPolicy").WithTags("Donations");
+
+app.MapPatch("/campaigns/{id}/donation-received", async (Guid id, [FromBody] DonationReceivedRequest request, IMediator mediator) =>
+{
+    request.CampaignId = id;
+    var result = await mediator.Send(request);
+    return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
+}).WithTags("Campaigns");
 
 app.Run();
