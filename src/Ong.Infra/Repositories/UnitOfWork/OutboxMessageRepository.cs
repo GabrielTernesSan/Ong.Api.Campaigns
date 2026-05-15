@@ -13,7 +13,21 @@ namespace Ong.Infra.Repositories.UnitOfWork
             _context = context;
         }
 
-        public async Task CreateAsync(OutboxMessage message)
+        public async Task<OutboxMessage?> GetOutboxMessageByIdAsync(Guid id)
+        {
+            return await (from o in _context.OutboxMessages
+                          where o.Id == id
+                          select new OutboxMessage(
+                              o.Id,
+                              o.Type,
+                              o.Payload,
+                              o.OccurredOn,
+                              o.ProcessedOn,
+                              o.Error,
+                              o.RetryCount)).FirstOrDefaultAsync();
+        }
+
+        public async Task CreateAsync(OutboxMessage message, CancellationToken cancellationToken)
         {
             var entity = new Tables.OutboxMessage
             {
@@ -25,48 +39,17 @@ namespace Ong.Infra.Repositories.UnitOfWork
                 Error = message.Error
             };
 
-            await _context.OutboxMessages.AddAsync(entity);
+            await _context.OutboxMessages.AddAsync(entity, cancellationToken);
         }
 
-        public async Task MarkAsProcessedAsync(Guid id, DateTime processedOn, string? error = null)
+        public async Task UpdateAsync(OutboxMessage message, CancellationToken cancellationToken)
         {
-            var entity = await _context.OutboxMessages.FindAsync(id);
+            var entity = await _context.OutboxMessages
+                .FindAsync([message.Id], cancellationToken) ?? throw new Exception("Entity not found");
 
-            if (entity != null)
-            {
-                entity.ProcessedOn = processedOn;
-                entity.Error = error;
-
-                _context.OutboxMessages.Update(entity);
-            }
-        }
-
-        public async Task<IEnumerable<OutboxMessage>> GetUnprocessedAsync()
-        {
-            var entities = await _context.OutboxMessages
-                .Where(m => m.ProcessedOn == null)
-                .ToListAsync();
-
-            return entities.Select(e => new OutboxMessage(
-                e.Id,
-                e.Type,
-                e.Payload,
-                e.OccurredOn,
-                e.ProcessedOn,
-                e.Error
-            ));
-        }
-
-        public async Task MarkAsErrorAsync(Guid id, string error)
-        {
-            var entity = await _context.OutboxMessages.FindAsync(id);
-
-            if (entity != null)
-            {
-                entity.Error = error;
-
-                _context.OutboxMessages.Update(entity);
-            }
+            entity.ProcessedOn = message.ProcessedOn;
+            entity.Error = message.Error;
+            entity.RetryCount = message.RetryCount;
         }
     }
 }

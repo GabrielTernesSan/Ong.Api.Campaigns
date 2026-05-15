@@ -5,49 +5,17 @@ namespace Ong.Domain
         public Guid Id { get; }
         public string Name { get; private set; }
         public string Email { get; private set; }
-        public string PasswordHash { get; private set; }
-        public string Role { get; private set; }
 
-        public User(string name, string email, string passwordHash, string role)
+        public User(Guid id, string name, string email)
         {
             if (string.IsNullOrWhiteSpace(email))
                 throw new ArgumentException("Email não pode ser vazio ou nulo.", nameof(email));
             if (!IsValidEmail(email))
                 throw new ArgumentException("Formato de email é inválido", nameof(email));
-            if (string.IsNullOrWhiteSpace(passwordHash))
-                throw new ArgumentException("Password hash não pode ser vazio ou nulo.", nameof(passwordHash));
-            if (string.IsNullOrWhiteSpace(role))
-                throw new ArgumentException("Role não pode ser vazio ou nulo.", nameof(role));
-
-            Name = name;
-            Email = email;
-            PasswordHash = passwordHash;
-            Role = role;
-        }
-
-        public User(Guid id, string name, string email, string passwordHash, string role)
-            : this (name, email, passwordHash, role)
-        {
-            if (id == Guid.Empty)
-                throw new ArgumentException("Id não pode ser vazio ou nulo.", nameof(id));
 
             Id = id;
-        }
-
-        public void SetPasswordHash(string passwordHash)
-        {
-            if (string.IsNullOrWhiteSpace(passwordHash))
-                throw new ArgumentException("Password hash não pode ser vazio ou nulo.", nameof(passwordHash));
-
-            PasswordHash = passwordHash;
-        }
-
-        public void SetRole(string role)
-        {
-            if (string.IsNullOrWhiteSpace(role))
-                throw new ArgumentException("Role não pode ser vazio ou nulo.", nameof(role));
-
-            Role = role;
+            Name = name;
+            Email = email;
         }
 
         public void UpdateEmail(string newEmail)
@@ -55,8 +23,7 @@ namespace Ong.Domain
             if (string.IsNullOrWhiteSpace(newEmail))
                 throw new ArgumentException("Email não pode ser vazio ou nulo.", nameof(newEmail));
             if (!IsValidEmail(newEmail))
-                throw new ArgumentException("Formato de email é inválido (Parameter 'newEmail')", nameof(newEmail));
-
+                throw new ArgumentException("Formato de email é inválido", nameof(newEmail));
             Email = newEmail;
         }
 

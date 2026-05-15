@@ -12,15 +12,15 @@ using Ong.Infra;
 namespace Ong.Infra.Migrations
 {
     [DbContext(typeof(OngDbContext))]
-    [Migration("20260328203805_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260513134031_InicialMigration")]
+    partial class InicialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -29,9 +29,6 @@ namespace Ong.Infra.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
-
-                    b.Property<decimal>("CurrentAmount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
                         .IsRequired()

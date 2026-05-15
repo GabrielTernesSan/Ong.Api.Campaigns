@@ -12,15 +12,15 @@ using Ong.Infra;
 namespace Ong.Infra.Migrations
 {
     [DbContext(typeof(OngDbContext))]
-    [Migration("20260422161030_RemoveCurrentAmountFromCampaign")]
-    partial class RemoveCurrentAmountFromCampaign
+    [Migration("20260515161847_AlterTableUser")]
+    partial class AlterTableUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -101,6 +101,11 @@ namespace Ong.Infra.Migrations
                     b.Property<DateTime?>("ProcessedOn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("RetryCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
@@ -123,15 +128,6 @@ namespace Ong.Infra.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
 

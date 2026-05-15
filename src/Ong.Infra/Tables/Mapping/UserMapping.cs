@@ -20,12 +20,6 @@ namespace Ong.Infra.Tables.Mapping
             builder.Property(x => x.Email)
                 .IsRequired()
                 .HasMaxLength(100);
-
-            builder.Property(x => x.PasswordHash).IsRequired();
-
-            builder.Property(x => x.Role)
-                .IsRequired()
-                .HasMaxLength(20);
         }
     }
 }

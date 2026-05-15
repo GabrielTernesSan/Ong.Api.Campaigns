@@ -13,17 +13,6 @@ namespace Ong.Infra.Repositories
             _context = context;
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
-        {
-            var entity = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            return entity == null
-                ? null
-                : new User(entity.Id, entity.Name, entity.Email, entity.PasswordHash, entity.Role);
-        }
-
         public async Task<User?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Users
@@ -32,21 +21,29 @@ namespace Ong.Infra.Repositories
 
             return entity == null
                 ? null
-                : new User(entity.Id, entity.Name, entity.Email, entity.PasswordHash, entity.Role);
+                : new User(entity.Id, entity.Name, entity.Email);
         }
 
         public async Task CreateAsync(User user)
         {
-            var entity = new Tables.User
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                PasswordHash = user.PasswordHash,
-                Role = user.Role
-            };
+            var entity = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
 
-            _context.Users.Add(entity);
+            if (entity != null)
+            {
+                entity.Email = user.Email;
+            }
+            else
+            {
+                entity = new Tables.User
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email
+                };
+
+                _context.Users.Add(entity);
+            }
 
             await _context.SaveChangesAsync();
         }
