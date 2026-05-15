@@ -11,7 +11,7 @@
                     .GetRequiredService<IConfiguration>();
 
                 var receivedKey = request.Headers["X-Api-Key"].FirstOrDefault();
-                var expectedKey = config["WorkerApiKey"];
+                var expectedKey = config["ApiKeys:WorkerApiKey"];
 
                 if (string.IsNullOrEmpty(receivedKey) || receivedKey != expectedKey)
                     return Results.Unauthorized();
