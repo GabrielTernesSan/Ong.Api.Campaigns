@@ -1,12 +1,13 @@
-using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using OpenTelemetry.Metrics;
+using Microsoft.OpenApi;
+using Ong.Api.Campaigns.Extensions;
 using Ong.Application;
 using Ong.Application.Requests;
+using Ong.Domain.Queries;
 using Ong.Infra;
+using OpenTelemetry.Metrics;
 using System.Security.Claims;
 using System.Text;
 
@@ -24,17 +25,6 @@ builder.Services.AddOpenTelemetry()
         metrics.AddPrometheusExporter();
     });
 
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
-        {
-            h.Username(builder.Configuration["RabbitMq:Username"]);
-            h.Password(builder.Configuration["RabbitMq:Password"]);
-        });
-    });
-});
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -52,8 +42,15 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Token JWT"
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-        { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() }
+    c.AddSecurityRequirement((OpenApiDocument doc) =>
+    {
+        return new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecuritySchemeReference("Bearer", doc),
+                []
+            }
+        };
     });
 });
 
@@ -127,5 +124,30 @@ app.MapPatch("/campaigns/{id}/donation-received", async (Guid id, [FromBody] Don
     var result = await mediator.Send(request);
     return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
 }).WithTags("Campaigns");
+
+app.MapGet("/campaigns/outbox", async ([FromServices] IOutboxMessageQuery query) =>
+{
+    var messages = await query.ObterOutboxMessagesPendentesAsync();
+    return messages;
+}).RequireApiKey();
+
+app.MapPatch("/campaigns/outbox/{id}/processed", async (Guid id, IMediator mediator) =>
+{
+    var result = await mediator.Send(new UpdateOutboxRequest() { Id = id });
+    return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
+}).RequireApiKey();
+
+app.MapPatch("/campaigns/outbox/{id}/error", async (Guid id, [FromBody] UpdateOutboxRequest request, IMediator mediator) =>
+{
+    request.Id = id;
+    var result = await mediator.Send(request);
+    return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
+}).RequireApiKey();
+
+app.MapPost("/campaigns/users", async ([FromBody] CreateUserRequest request, IMediator mediator) =>
+{
+    var result = await mediator.Send(request);
+    return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
+}).RequireApiKey();
 
 app.Run();

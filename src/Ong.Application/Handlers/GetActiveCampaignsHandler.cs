@@ -22,6 +22,7 @@ namespace Ong.Application.Handlers
             var response = new Response();
 
             var campaigns = (await _campaignRepository.GetActiveAsync()).ToList();
+
             var totalAmounts = await _donationRepository.GetTotalAmountsByCampaignIdsAsync(campaigns.Select(campaign => campaign.Id));
 
             response.SetResult(campaigns.Select(c => new

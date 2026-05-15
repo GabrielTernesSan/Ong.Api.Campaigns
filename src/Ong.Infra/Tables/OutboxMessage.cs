@@ -8,5 +8,6 @@ namespace Ong.Infra.Tables
         public DateTime OccurredOn { get; set; }
         public DateTime? ProcessedOn { get; set; }
         public string? Error { get; set; }
+        public int RetryCount { get; set; }
     }
 }

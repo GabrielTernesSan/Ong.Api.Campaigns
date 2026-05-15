@@ -63,7 +63,7 @@ namespace Ong.Application.Handlers
 
             await _donationRepository.CreateAsync(donation);
 
-            await _outboxRepository.CreateAsync(outboxMessage);
+            await _outboxRepository.CreateAsync(outboxMessage, cancellationToken);
 
             await _unitOfWork.CommitAsync(cancellationToken);
 
