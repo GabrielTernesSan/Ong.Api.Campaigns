@@ -123,31 +123,31 @@ app.MapPatch("/campaigns/{id}/donation-received", async (Guid id, [FromBody] Don
     request.CampaignId = id;
     var result = await mediator.Send(request);
     return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
-}).WithTags("Campaigns");
+}).RequireApiKey().WithTags("Worker");
 
 app.MapGet("/campaigns/outbox", async ([FromServices] IOutboxMessageQuery query) =>
 {
     var messages = await query.ObterOutboxMessagesPendentesAsync();
     return messages;
-}).RequireApiKey();
+}).RequireApiKey().WithTags("Worker");
 
 app.MapPatch("/campaigns/outbox/{id}/processed", async (Guid id, IMediator mediator) =>
 {
     var result = await mediator.Send(new UpdateOutboxRequest() { Id = id });
     return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
-}).RequireApiKey();
+}).RequireApiKey().WithTags("Worker");
 
 app.MapPatch("/campaigns/outbox/{id}/error", async (Guid id, [FromBody] UpdateOutboxRequest request, IMediator mediator) =>
 {
     request.Id = id;
     var result = await mediator.Send(request);
     return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
-}).RequireApiKey();
+}).RequireApiKey().WithTags("Worker");
 
 app.MapPost("/campaigns/users", async ([FromBody] CreateUserRequest request, IMediator mediator) =>
 {
     var result = await mediator.Send(request);
     return result.HasErrors ? Results.BadRequest(result) : Results.Ok(result);
-}).RequireApiKey();
+}).RequireApiKey().WithTags("Worker");
 
 app.Run();
