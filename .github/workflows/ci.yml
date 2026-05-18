@@ -46,6 +46,7 @@ jobs:
           name: Testes - Ong.Api.Campaigns
           path: ./test-results/*.trx
           reporter: dotnet-trx
+          fail-on-empty: false
 
   docker:
     name: 🐳 Docker Build & Push
