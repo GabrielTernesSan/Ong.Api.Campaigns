@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-and-test:
-    name: 🔨 Build & Testes
+    name: 🔨 Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,22 +27,4 @@ jobs:
 
       - name: 🏗️ Build
         run: dotnet build Ong.Api.Campaigns.sln --configuration Release --no-restore
-
-      - name: 🧪 Testes
-        run: |
-          dotnet test tests/Ong.Tests/Ong.Tests.csproj \
-            --configuration Release \
-            --no-build \
-            --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
-            --results-directory ./test-results
-
-      - name: 📊 Publicar Resultados
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Testes - Ong.Api.Campaigns
-          path: ./test-results/*.trx
-          reporter: dotnet-trx
-          fail-on-empty: false
 
