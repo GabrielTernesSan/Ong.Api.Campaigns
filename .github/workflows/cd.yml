@@ -3,7 +3,7 @@ name: CD - Ong.Api.Campaigns
 on:
   workflow_run:
     workflows: ["CI - Ong.Api.Campaigns"]
-    branches: [main]
+    branches: [main, master]
     types: [completed]
 
 env:

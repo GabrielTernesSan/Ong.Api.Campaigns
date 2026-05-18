@@ -2,9 +2,9 @@ name: CI - Ong.Api.Campaigns
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 env:
   DOTNET_VERSION: '10.0.x'
