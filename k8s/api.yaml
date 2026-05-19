@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ong-api-campaigns
+  labels:
+    app: ong-api-campaigns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ong-api-campaigns
+  template:
+    metadata:
+      labels:
+        app: ong-api-campaigns
+    spec:
+      containers:
+      - name: ong-api-campaigns
+        image: ong-api-campaigns:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ong-api-campaigns
+spec:
+  type: NodePort
+  selector:
+    app: ong-api-campaigns
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30080
